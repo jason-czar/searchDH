@@ -4,7 +4,9 @@
   "description": "A custom search application for finding DHgate alternatives to products",
   "main": "index.html",
   "scripts": {
-    "start": "echo 'This is a static site, no build process required'"
+    "start": "npx http-server -o -p 8080",
+    "deploy": "netlify deploy --prod",
+    "dev": "npx http-server -o -p 8080 -c-1"
   },
   "repository": {
     "type": "git",
