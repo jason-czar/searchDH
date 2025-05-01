@@ -484,10 +484,14 @@
                 
                 // First redirect to affiliate URL with original URL as parameter
                 // This creates a two-step redirect: affiliate URL -> original URL
-                window.location.href = affiliateUrl + '?redirect=' + encodeURIComponent(originalHref);
+                // Open in a new tab
+                window.open(affiliateUrl + '?redirect=' + encodeURIComponent(originalHref), '_blank');
                 
                 return false;
               });
+              
+              // Set target to _blank to open in new tab
+              link.setAttribute('target', '_blank');
               
               // Mark as modified to avoid duplicate handlers
               link.setAttribute('data-modified', 'true');
