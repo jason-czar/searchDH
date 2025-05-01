@@ -1,0 +1,25 @@
+{
+  "name": "searchdh",
+  "version": "1.0.0",
+  "description": "A custom search application for finding DHgate alternatives to products",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'This is a static site, no build process required'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jason-czar/searchDH.git"
+  },
+  "keywords": [
+    "search",
+    "dhgate",
+    "product",
+    "comparison"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jason-czar/searchDH/issues"
+  },
+  "homepage": "https://github.com/jason-czar/searchDH#readme"
+}
