@@ -7,7 +7,7 @@
     "start": "npx http-server -o -p 8080",
     "deploy": "netlify deploy --prod",
     "dev": "npx http-server -o -p 8080 -c-1",
-    "visual": "netlify dev --editable"
+    "visual": "netlify dev"
   },
   "repository": {
     "type": "git",
