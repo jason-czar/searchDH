@@ -917,12 +917,56 @@
       }
     }
     
+    // Function to hide logo when search results are shown
+    function setupLogoVisibility() {
+      // Create a MutationObserver to watch for changes in the DOM
+      const observer = new MutationObserver(function(mutations) {
+        // Check if search results are visible
+        const searchResults = document.querySelector('.gsc-results-wrapper-overlay.gsc-results-wrapper-visible');
+        const logoContainer = document.querySelector('.logo-container');
+        
+        if (logoContainer) {
+          if (searchResults) {
+            // Hide logo when search results are visible
+            logoContainer.style.display = 'none';
+          } else {
+            // Show logo when search results are not visible
+            logoContainer.style.display = 'block';
+          }
+        }
+      });
+      
+      // Start observing the document body for changes
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      
+      // Also check when the search button is clicked
+      const searchButton = document.querySelector('.gsc-search-button');
+      if (searchButton) {
+        searchButton.addEventListener('click', function() {
+          // Give a small delay to allow results to load
+          setTimeout(function() {
+            const logoContainer = document.querySelector('.logo-container');
+            if (logoContainer) {
+              logoContainer.style.display = 'none';
+            }
+          }, 100);
+        });
+      }
+    }
+    
     // Run the setup when the page loads
-    window.addEventListener('load', setupUrlSearchHandler);
+    window.addEventListener('load', function() {
+      setupUrlSearchHandler();
+      setupLogoVisibility();
+    });
     
     // Also run when Google search results are updated
     document.addEventListener('DOMContentLoaded', function() {
       setupUrlSearchHandler();
+      setupLogoVisibility();
     });
   </script>
 </head>
