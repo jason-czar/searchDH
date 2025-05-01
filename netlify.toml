@@ -1,11 +1,60 @@
+# Netlify configuration file
+
 [build]
-  publish = "/"
-  command = ""
+  publish = "/"  # The directory to publish (root in this case)
+  command = ""    # No build command needed for static site
 
 [build.environment]
-  NODE_VERSION = "16"
+  NODE_VERSION = "16"  # Set Node.js version for compatibility
 
+# Production context: all deploys from the Production branch set in your site's
+# deploy contexts will inherit these settings.
+[context.production]
+  # This is where we define environment variables for production
+  [context.production.environment]
+    NODE_VERSION = "16"  # Set Node.js version if needed in the future
+
+# Deploy Preview context: all deploys generated from a pull/merge request will
+# inherit these settings.
+[context.deploy-preview]
+  # This is where we define environment variables for deploy previews
+  [context.deploy-preview.environment]
+    NODE_VERSION = "16"  # Set Node.js version if needed in the future
+
+# Branch Deploy context: all deploys that are not from a pull/merge request or
+# from the Production branch will inherit these settings.
+[context.branch-deploy]
+  # This is where we define environment variables for branch deploys
+  [context.branch-deploy.environment]
+    NODE_VERSION = "16"  # Set Node.js version if needed in the future
+
+# Redirects and headers are GLOBAL for all builds – they do not get scoped to
+# contexts no matter where you define them in the file.
+
+# Redirect rule for the main application
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Redirect rule for the redirect page
+[[redirects]]
+  from = "/redirect"
+  to = "/redirect.html"
+  status = 200
+  force = true
+
+# Headers to return with requests for the specified paths
+[[headers]]
+  # Define which paths this specific [[headers]] block will cover.
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    Content-Security-Policy = "frame-ancestors 'none'"
+    # Multi-value headers are expressed with multi-line strings
+    cache-control = '''
+    max-age=0,
+    no-cache,
+    no-store,
+    must-revalidate'''
