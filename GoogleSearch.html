@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Google Search</title>
+  <script async src="https://cse.google.com/cse.js?cx=2224a95ca357d4e8a"></script>
+  <style>
+    /* Custom styles for the search interface */
+    body {
+      background-color: #42484B;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+    
+    /* Main container */
+    .search-container {
+      width: calc(100% - 40px);
+      max-width: 800px;
+      margin: 0 20px;
+      padding: 24px 0; /* Increased vertical padding by 20% (from 20px to 24px) */
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+    
+    /* Ensure all elements respect container width */
+    * {
+      box-sizing: border-box;
+      max-width: 100%;
+    }
+    
+    /* Mobile-specific adjustments */
+    @media (max-width: 768px) {
+      body {
+        overflow-x: hidden;
+        width: 100%;
+        position: relative;
+      }
+      
+      .search-container {
+        width: 100%;
+        margin: 0;
+        padding: 24px 15px; /* Increased vertical padding by 20% (from 20px to 24px) */
+      }
+      
+      .logo-text {
+        font-size: 36px;
+      }
+      
+      .tagline {
+        font-size: 14px;
+        padding: 0 10px;
+      }
+      
+      /* Ensure search box fits mobile screen */
+      .gsc-input-box {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      
+      /* Ensure search results fit mobile screen */
+      .gsc-results-wrapper-overlay {
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        margin: 0 !important;
+      }
+    }
+    
+    /* Center the search div and add corner radius */
+    .gsc-control-cse {
+      border-radius: 30px !important;
+      background-color: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+    }
+    
+    /* Style the search box */
+    .gsc-search-box {
+      background-color: transparent !important;
+      border: none !important;
+      margin-bottom: 0 !important;
+    }
+    
+    /* Style the input box */
+    .gsc-input-box {
+      border: 2px solid rgba(255, 255, 255, 0.3) !important;
+      border-radius: 30px !important;
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      padding: 5px 10px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      width: 100% !important;
+    }
+    
+    .gsc-input-box:hover {
+      border-color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    /* Style the input text */
+    input.gsc-input {
+      background-color: transparent !important;
+      color: white !important;
+      background-image: none !important;
+      padding: 10px 30px 10px 10px !important; /* Add right padding for the clear button */
+      font-size: 16px !important;
+      height: auto !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Position the clear button */
+    .gsib_b {
+      position: absolute !important;
+      right: 10px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      z-index: 10 !important;
+    }
+    
+    /* Style the clear button */
+    .gsst_a {
+      color: rgba(255, 255, 255, 0.7) !important;
+      padding: 0 !important;
+    }
+    
+    .gsst_a:hover {
+      color: white !important;
+    }
+    
+    /* Hide the clear button (X) */
+    .gscb_a {
+      display: none !important;
+    }
+    
+    /* Hide the clear button container */
+    .gsst_a {
+      display: none !important;
+    }
+    
+    /* Hide the entire clear button container */
+    .gsib_b {
+      display: none !important;
+    }
+    
+    input.gsc-input::placeholder {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    /* Style the search suggestions dropdown */
+    .gsc-completion-container {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      -webkit-backdrop-filter: blur(5px) !important; /* Safari support */
+      backdrop-filter: blur(5px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 10px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+      margin-top: 5px !important;
+    }
+    
+    .gsc-completion-title {
+      color: white !important;
+      font-size: 14px !important;
+      padding: 8px 10px !important;
+    }
+    
+    /* Ensure all text in the dropdown is white */
+    .gsc-completion-container * {
+      color: white !important;
+    }
+    
+    .gsc-completion-selected {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    /* Make the search button white oval with improved styling */
+    .gsc-search-button.gsc-search-button-v2 {
+      background-color: white !important;
+      border: none !important;
+      border-radius: 22px !important; /* Half of height for pill shape */
+      width: 180px !important; /* 50% wider button (120px * 1.5 = 180px) */
+      height: 44px !important;
+      min-width: 180px !important;
+      min-height: 44px !important;
+      padding: 0 !important;
+      margin: 20px auto 0 !important; /* Top margin and auto left/right for centering */
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.4);
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+    
+    /* Modify the search table layout */
+    .gsc-search-box td {
+      display: block !important;
+      width: 100% !important;
+      text-align: center !important;
+    }
+    
+    /* Center the search button container */
+    .gsc-search-button {
+      display: flex !important;
+      justify-content: center !important;
+      width: 100% !important;
+    }
+    
+    .gsc-search-button.gsc-search-button-v2:hover {
+      background-color: #f0f0f0 !important;
+      transform: scale(1.05);
+    }
+    
+    /* Replace search icon with 'Search' text */
+    .gsc-search-button svg {
+      display: none !important;
+    }
+    
+    .gsc-search-button.gsc-search-button-v2::after {
+      content: 'Search';
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #42484B;
+      line-height: 1;
+    }
+    
+    /* Style search results container */
+    .gsc-results-wrapper-overlay {
+      background-color: #42484B !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 15px !important;
+      scrollbar-width: none !important; /* Firefox */
+      -ms-overflow-style: none !important; /* IE and Edge */
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .gsc-results-wrapper-overlay::-webkit-scrollbar,
+    .gsc-results::-webkit-scrollbar,
+    .gsc-modal-background-image::-webkit-scrollbar,
+    .gsc-overflow-modal::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      background: transparent !important;
+    }
+    
+    /* Ensure all modal and overlay elements have the correct background */
+    .gsc-modal-background-image,
+    .gsc-modal-background-image-visible,
+    .gsc-results-wrapper-visible,
+    .gsc-overflow-modal {
+      background-color: #42484B !important;
+    }
+    
+    /* Fix any other potential background elements */
+    .gsc-adBlock,
+    .gsc-webResult.gsc-result,
+    .gsc-expansionArea,
+    .gsc-refinementsArea,
+    .gsc-tabsArea {
+      background-color: #42484B !important;
+    }
+    
+    /* Hide results info and add spacing */
+    .gsc-result-info,
+    .gsc-above-wrapper-area,
+    .gcsc-branding-img-noclear,
+    .gcsc-branding,
+    .gsc-branding,
+    .gsc-branding-img,
+    .gsc-branding-img-noclear,
+    .gsc-branding-text {
+      display: none !important;
+    }
+    
+    /* Add space between search bar and results */
+    .gsc-above-wrapper-area {
+      margin-top: 30px !important;
+    }
+    
+    .gsc-wrapper {
+      padding-top: 20px !important;
+    }
+    
+    /* Style search results */
+    .gsc-webResult.gsc-result {
+      border: none !important;
+      padding: 15px !important;
+      margin-bottom: 10px !important;
+      background-color: rgba(255, 255, 255, 0.05) !important;
+      border-radius: 10px !important;
+      transition: all 0.2s ease;
+    }
+    
+    .gsc-webResult.gsc-result:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    /* Style result titles */
+    .gs-webResult .gs-title,
+    .gs-webResult .gs-title * {
+      color: white !important;
+      font-size: 18px !important;
+      text-decoration: none !important;
+      font-weight: 500 !important;
+    }
+    
+    .gs-webResult .gs-title:hover,
+    .gs-webResult .gs-title *:hover {
+      text-decoration: underline !important;
+    }
+    
+    /* Style result snippets */
+    .gs-webResult .gs-snippet {
+      color: rgba(255, 255, 255, 0.8) !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+      margin: 8px 0 !important;
+    }
+    
+    /* Style URLs */
+    .gs-webResult .gs-visibleUrl {
+      color: #8ab4f8 !important;
+      font-size: 13px !important;
+    }
+    
+    /* Style images with corner radius */
+    .gs-image, .gs-image-box img, .gs-imagePreview {
+      border-radius: 20px !important;
+      overflow: hidden !important;
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    
+    /* Style image preview area */
+    .gs-imagePreviewArea {
+      background-color: #42484B !important;
+      margin: 1px 0 30px 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Add additional margin under each image preview area */
+    .gs-imagePreviewArea + * {
+      margin-top: 30px !important;
+    }
+    
+    /* Add more space below product information section */
+    .gs-previewSnippet {
+      margin-bottom: 40px !important;
+    }
+    
+    /* Add space after product description */
+    .gs-previewDescription {
+      margin-bottom: 30px !important;
+      padding-bottom: 10px !important;
+    }
+    
+    /* Style search button */
+    .gsc-search-button-v2 {
+      border-radius: 50px !important;
+      padding: 10px 30px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      display: block !important;
+      width: 150px !important;
+      margin-top: 20px !important;
+    }
+    
+    /* Make search button text medium bold */
+    .gsc-search-button-v2 svg {
+      display: none !important;
+    }
+    
+    .gsc-search-button-v2::after {
+      content: 'Search' !important;
+      font-weight: 600 !important;
+      font-size: 16px !important;
+    }
+    
+    /* Style pagination */
+    .gsc-cursor {
+      display: flex !important;
+      justify-content: center !important;
+      width: 100% !important;
+      position: fixed !important;
+      bottom: 20px !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 100 !important;
+      padding-bottom: 30px !important;
+    }
+    
+    /* Add extra padding at the bottom of results to prevent overlap with pagination */
+    .gsc-results {
+      padding-bottom: 80px !important;
+    }
+    
+    .gsc-cursor-page {
+      color: white !important;
+      background-color: transparent !important;
+      border: 2px solid rgba(255, 255, 255, 0.7) !important;
+      border-radius: 50% !important;
+      width: 36px !important;
+      height: 36px !important;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      margin: 0 5px !important;
+      font-size: 14px !important;
+      font-weight: bold !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .gsc-cursor-page.gsc-cursor-current-page {
+      color: #42484B !important;
+      background-color: white !important;
+      border: 2px solid white !important;
+    }
+    
+    .gsc-cursor-page:hover:not(.gsc-cursor-current-page) {
+      transform: scale(1.1) !important;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+      border-color: white !important;
+    }
+    
+    .gsc-cursor-page.gsc-cursor-current-page {
+      background-color: white !important;
+      color: #42484B !important;
+      font-weight: bold !important;
+      box-shadow: 0 4px 8px rgba(255, 255, 255, 0.4) !important;
+    }
+    
+    /* Remove extra borders and unwanted elements */
+    .gsc-table-result, 
+    .gsc-thumbnail-inside, 
+    .gsc-url-top,
+    .gsc-control-wrapper-cse,
+    .gsc-results .gsc-cursor-box {
+      border: none !important;
+      background-color: transparent !important;
+    }
+    
+    /* Hide the tabs area (Web/Image toggle) */
+    .gsc-tabsArea {
+      display: none !important;
+    }
+  </style>
+  <script>
+    // Function to modify all search result links to go through affiliate URL first
+    function modifySearchResultLinks() {
+      // The affiliate URL to redirect through
+      const affiliateUrl = 'https://sale.dhgate.com/92xVti99';
+      
+      // Wait for search results to load
+      const observer = new MutationObserver(function(mutations) {
+        // Look for all result links
+        const resultLinks = document.querySelectorAll('.gs-title a.gs-title, .gs-visibleUrl, .gs-image-thumbnail-container a, .gs-image');
+        
+        resultLinks.forEach(function(link) {
+          // Only modify if not already modified
+          if (!link.getAttribute('data-modified')) {
+            const originalHref = link.getAttribute('href');
+            if (originalHref && !originalHref.includes(affiliateUrl)) {
+              // Create a function to handle the click
+              link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // First redirect to affiliate URL with original URL as parameter
+                // This creates a two-step redirect: affiliate URL -> original URL
+                window.location.href = affiliateUrl + '?redirect=' + encodeURIComponent(originalHref);
+                
+                return false;
+              });
+              
+              // Mark as modified to avoid duplicate handlers
+              link.setAttribute('data-modified', 'true');
+            }
+          }
+        });
+      });
+      
+      // Start observing the document for changes
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+    
+    // Run the function when the page loads
+    window.addEventListener('load', modifySearchResultLinks);
+    
+    // Also run when Google search results are updated
+    document.addEventListener('DOMContentLoaded', function() {
+      // Check if Google search has loaded
+      if (typeof google !== 'undefined' && google.search && google.search.cse) {
+        // Add listener for when search results are rendered
+        if (google.search.cse.element) {
+          google.search.cse.element.on('rendered', function() {
+            modifySearchResultLinks();
+          });
+        }
+      }
+    });
+  </script>
+  <script>
+    // Function to handle custom URL search functionality
+    function setupUrlSearchHandler() {
+      // Wait for the search box to be available
+      const observer = new MutationObserver(function(mutations) {
+        const searchForm = document.querySelector('.gsc-search-box');
+        const searchInput = document.querySelector('.gsc-input');
+        
+        if (searchForm && searchInput && !searchForm.getAttribute('data-url-handler')) {
+          // Mark as modified to avoid duplicate handlers
+          searchForm.setAttribute('data-url-handler', 'true');
+          
+          // Add event listener for paste events directly on the input
+          searchInput.addEventListener('paste', function(e) {
+            // Get pasted content
+            let pastedText;
+            if (window.clipboardData && window.clipboardData.getData) {
+              pastedText = window.clipboardData.getData('Text');
+            } else if (e.clipboardData && e.clipboardData.getData) {
+              pastedText = e.clipboardData.getData('text/plain');
+            }
+            
+            // Check if pasted content is a URL
+            if (pastedText && isValidUrl(pastedText)) {
+              // Let the paste happen normally
+              setTimeout(function() {
+                // Now handle the URL
+                handleUrlInput(pastedText, searchInput, searchForm);
+              }, 10);
+            }
+          });
+          
+          // Add event listener to the form submission
+          searchForm.addEventListener('submit', function(e) {
+            const inputValue = searchInput.value.trim();
+            
+            // Check if the input is a URL
+            if (isValidUrl(inputValue)) {
+              e.preventDefault(); // Prevent default search
+              handleUrlInput(inputValue, searchInput, searchForm);
+            }
+          });
+          
+          // Add a placeholder text to indicate URL search capability
+          if (searchInput) {
+            searchInput.setAttribute('placeholder', 'Search or paste product URL...');
+          }
+          
+          // Stop observing once we've set up the handler
+          observer.disconnect();
+        }
+      });
+      
+      // Start observing the document for changes
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+    
+    // Helper function to handle URL input
+    function handleUrlInput(url, searchInput, searchForm) {
+      console.log('Handling URL:', url);
+      
+      // Special handling for Nike URLs
+      if (url.includes('nike.com')) {
+        try {
+          const urlObj = new URL(url);
+          const path = urlObj.pathname;
+          
+          // Nike URLs follow pattern: /t/product-name-id/product-code
+          const pathParts = path.split('/');
+          if (pathParts.length >= 4) {
+            // Get product name from URL
+            let productName = '';
+            if (pathParts[2]) {
+              productName = pathParts[2].replace(/-/g, ' ');
+            }
+            
+            // Combine information
+            let searchQuery = 'Nike ' + productName;
+            if (productName.toLowerCase().includes('air force')) {
+              searchQuery = 'Nike Air Force 1';
+            } else if (productName.toLowerCase().includes('air jordan')) {
+              const jordanMatch = productName.match(/air\s+jordan\s+(\d+)/i);
+              if (jordanMatch && jordanMatch[1]) {
+                searchQuery = 'Nike Air Jordan ' + jordanMatch[1];
+              } else {
+                searchQuery = 'Nike Air Jordan';
+              }
+            } else if (productName.toLowerCase().includes('dunk')) {
+              searchQuery = 'Nike Dunk';
+            }
+            
+            // Update search input and trigger search
+            searchInput.value = searchQuery + ' site:dhgate.com';
+            setTimeout(function() {
+              const searchButton = document.querySelector('.gsc-search-button');
+              if (searchButton) {
+                searchButton.click();
+              }
+            }, 100);
+            
+            return;
+          }
+        } catch (error) {
+          console.error('Error processing Nike URL:', error);
+        }
+      }
+      
+      // For other URLs, use the general extraction method
+      extractProductInfo(url);
+    }
+    
+    // Helper function to check if a string is a valid URL
+    function isValidUrl(string) {
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    
+    // Helper function to extract product information from a URL
+    function extractProductInfo(url) {
+      try {
+        const urlObj = new URL(url);
+        const domain = urlObj.hostname.toLowerCase();
+        const path = urlObj.pathname;
+        
+        // Create a loading indicator
+        const searchInput = document.querySelector('.gsc-input');
+        if (!searchInput) return null;
+        
+        searchInput.value = 'Analyzing product...';
+        
+        // Special handling for Nike URLs
+        if (domain.includes('nike.com')) {
+          // Extract product info directly from the URL
+          // Nike URLs follow pattern: /t/product-name-id/product-code
+          const pathParts = path.split('/');
+          if (pathParts.length >= 4) {
+            // Get product name from URL
+            let productName = '';
+            if (pathParts[2]) {
+              productName = pathParts[2].replace(/-/g, ' ');
+            }
+            
+            // Get product code if available
+            let productCode = '';
+            if (pathParts[3]) {
+              productCode = pathParts[3];
+            }
+            
+            // Combine information
+            let searchQuery = 'Nike ' + productName;
+            if (productName.toLowerCase().includes('air force')) {
+              searchQuery = 'Nike Air Force 1';
+            } else if (productName.toLowerCase().includes('air jordan')) {
+              const jordanMatch = productName.match(/air\s+jordan\s+(\d+)/i);
+              if (jordanMatch && jordanMatch[1]) {
+                searchQuery = 'Nike Air Jordan ' + jordanMatch[1];
+              } else {
+                searchQuery = 'Nike Air Jordan';
+              }
+            } else if (productName.toLowerCase().includes('dunk')) {
+              searchQuery = 'Nike Dunk';
+            }
+            
+            // Update search input and trigger search
+            searchInput.value = searchQuery + ' site:dhgate.com';
+            setTimeout(function() {
+              const searchButton = document.querySelector('.gsc-search-button');
+              if (searchButton) {
+                searchButton.click();
+              }
+            }, 100);
+            
+            return null;
+          }
+        }
+        
+        // Try multiple proxy services in case one fails
+        const proxyServices = [
+          { name: 'allorigins', url: 'https://api.allorigins.win/raw?url=' },
+          { name: 'corsproxy', url: 'https://corsproxy.io/?' }
+        ];
+        
+        // Try the first proxy service
+        tryFetchWithProxy(0);
+        
+        function tryFetchWithProxy(index) {
+          if (index >= proxyServices.length) {
+            // All proxies failed, try direct URL parsing
+            extractFromUrlDirectly(urlObj);
+            return;
+          }
+          
+          const proxy = proxyServices[index];
+          const proxyUrl = proxy.url + encodeURIComponent(url);
+          
+          fetch(proxyUrl)
+            .then(response => {
+              if (!response.ok) throw new Error('Network response was not ok');
+              return response.text();
+            })
+            .then(html => processHtml(html))
+            .catch(error => {
+              console.error(`Error with ${proxy.name}:`, error);
+              // Try next proxy
+              tryFetchWithProxy(index + 1);
+            });
+        }
+        
+        function processHtml(html) {
+          // Create a temporary DOM element to parse the HTML
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          
+          // Extract product information from meta tags
+          let title = '';
+          let brand = '';
+          
+          // Try to get the title
+          const metaTitle = doc.querySelector('meta[property="og:title"]');
+          const metaProductName = doc.querySelector('meta[property="product:title"], meta[property="og:product_name"], meta[name="product-name"]');
+          const pageTitle = doc.querySelector('title');
+          
+          if (metaTitle) {
+            title = metaTitle.getAttribute('content');
+          } else if (metaProductName) {
+            title = metaProductName.getAttribute('content');
+          } else if (pageTitle) {
+            title = pageTitle.textContent;
+          }
+          
+          // Try to get the brand
+          const metaBrand = doc.querySelector('meta[property="product:brand"], meta[property="og:brand"], meta[name="brand"]');
+          
+          if (metaBrand) {
+            brand = metaBrand.getAttribute('content');
+          }
+          
+          // Try to get product details from structured data
+          try {
+            const structuredData = Array.from(doc.querySelectorAll('script[type="application/ld+json"]'));
+            for (const dataScript of structuredData) {
+              try {
+                const data = JSON.parse(dataScript.textContent);
+                if (data['@type'] === 'Product' || (data['@graph'] && data['@graph'].some(item => item['@type'] === 'Product'))) {
+                  const product = data['@type'] === 'Product' ? data : data['@graph'].find(item => item['@type'] === 'Product');
+                  
+                  if (product) {
+                    if (!title && product.name) {
+                      title = product.name;
+                    }
+                    if (!brand && product.brand && product.brand.name) {
+                      brand = product.brand.name;
+                    }
+                  }
+                }
+              } catch (e) {
+                console.error('Error parsing structured data:', e);
+              }
+            }
+          } catch (e) {
+            console.error('Error processing structured data:', e);
+          }
+          
+          // Try to extract from common product page elements if metadata approach failed
+          if (!title) {
+            // Look for common product title elements
+            const possibleTitleElements = [
+              doc.querySelector('h1.product-title'),
+              doc.querySelector('h1.product-name'),
+              doc.querySelector('h1.product_title'),
+              doc.querySelector('h1.productTitle'),
+              doc.querySelector('h1[itemprop="name"]'),
+              doc.querySelector('h1')  // Last resort: just take the first h1
+            ];
+            
+            for (const element of possibleTitleElements) {
+              if (element && element.textContent.trim()) {
+                title = element.textContent.trim();
+                break;
+              }
+            }
+          }
+          
+          // If brand is still empty, try to infer from domain
+          if (!brand) {
+            const domainBrands = {
+              'nike': 'Nike',
+              'adidas': 'Adidas',
+              'puma': 'Puma',
+              'newbalance': 'New Balance',
+              'underarmour': 'Under Armour',
+              'reebok': 'Reebok'
+            };
+            
+            for (const [brandKey, brandName] of Object.entries(domainBrands)) {
+              if (domain.includes(brandKey)) {
+                brand = brandName;
+                break;
+              }
+            }
+          }
+          
+          // Combine brand and title if available
+          let extractedInfo = '';
+          if (brand) extractedInfo += brand + ' ';
+          if (title) extractedInfo += title;
+          
+          // If we found information, use it for the search
+          if (extractedInfo) {
+            // Clean up the extracted info
+            extractedInfo = extractedInfo.trim()
+                                      .replace(/\s+/g, ' ')
+                                      .replace(/[^a-zA-Z0-9\s]/g, ' ')
+                                      .trim();
+            
+            // Update the search input
+            searchInput.value = extractedInfo + ' site:dhgate.com';
+            
+            // Trigger the search
+            setTimeout(function() {
+              const searchButton = document.querySelector('.gsc-search-button');
+              if (searchButton) {
+                searchButton.click();
+              }
+            }, 100);
+          } else {
+            // If all extraction methods failed, try URL parsing
+            extractFromUrlDirectly(urlObj);
+          }
+        }
+        
+        function extractFromUrlDirectly(urlObj) {
+          // Extract product info from URL parts
+          const pathSegments = urlObj.pathname.split('/');
+          
+          // Remove empty segments and common words
+          const filteredSegments = pathSegments.filter(segment => {
+            const s = segment.toLowerCase();
+            return s && s.length > 2 && 
+                   !['www', 'com', 'net', 'org', 'product', 'item', 'p', 'products', 'shop', 't'].includes(s);
+          });
+          
+          let productInfo = '';
+          
+          // Try to infer brand from domain
+          const domainParts = urlObj.hostname.split('.');
+          const possibleBrand = domainParts[0] !== 'www' ? domainParts[0] : domainParts[1];
+          if (possibleBrand && !['com', 'net', 'org', 'io'].includes(possibleBrand)) {
+            productInfo += possibleBrand + ' ';
+          }
+          
+          // Extract words from path segments
+          for (const segment of filteredSegments) {
+            // Replace hyphens and underscores with spaces
+            const words = segment.replace(/[-_]/g, ' ');
+            if (words && words.length > 2) {
+              productInfo += ' ' + words;
+            }
+          }
+          
+          // Clean up the product info
+          productInfo = productInfo.trim()
+                                  .replace(/\s+/g, ' ')
+                                  .replace(/[^a-zA-Z0-9\s]/g, ' ')
+                                  .trim();
+          
+          if (productInfo) {
+            searchInput.value = productInfo + ' site:dhgate.com';
+            setTimeout(function() {
+              const searchButton = document.querySelector('.gsc-search-button');
+              if (searchButton) {
+                searchButton.click();
+              }
+            }, 100);
+          } else {
+            searchInput.value = 'Could not extract product info. Please try a different URL or search manually.';
+          }
+        }
+        
+        // Return null since we're handling the search asynchronously
+        return null;
+      } catch (error) {
+        console.error('Error extracting product info:', error);
+        const searchInput = document.querySelector('.gsc-input');
+        if (searchInput) {
+          searchInput.value = 'Error processing URL. Please try a different URL or search manually.';
+        }
+        return null;
+      }
+    }
+    
+    // Run the setup when the page loads
+    window.addEventListener('load', setupUrlSearchHandler);
+    
+    // Also run when Google search results are updated
+    document.addEventListener('DOMContentLoaded', function() {
+      setupUrlSearchHandler();
+    });
+  </script>
+</head>
+<body>
+  <div class="search-container">
+    <div class="logo-container">
+      <h1 class="logo-text">Search<span class="logo-highlight">DH</span></h1>
+      <p class="tagline">Paste any product link — get DHgate alternatives in seconds.</p>
+    </div>
+    <div class="gcse-search" data-num-results-per-page="24"></div>
+  </div>
+  <footer class="footer">
+    <p>© 2025 SearchDH | All Rights Reserved</p>
+  </footer>
+  <style>
+    /* Logo and tagline styles */
+    .logo-container {
+      text-align: center;
+      margin-bottom: 36px; /* Increased vertical spacing by 20% (from 30px to 36px) */
+    }
+    
+    .logo-text {
+      font-size: 42px;
+      font-weight: 400;
+      color: white;
+      margin: 0 0 10px 0;
+    }
+    
+    .logo-highlight {
+      color: #FFD700; /* Golden yellow for DH */
+      font-weight: 700;
+    }
+    
+    .tagline {
+      font-size: 16px;
+      color: white;
+      margin: 0 0 36px 0; /* Increased vertical spacing by 20% (from 30px to 36px) */
+      font-weight: 300;
+    }
+    
+    /* Footer styles */
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      padding: 10px 0;
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      z-index: 1000;
+    }
+    
+    .footer p {
+      margin: 0;
+    }
+  </style>
+</body>
+</html>
