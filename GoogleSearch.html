@@ -917,20 +917,21 @@
       }
     }
     
-    // Function to hide logo when search results are shown
+    // Function to hide logo and tagline when search results are shown
     function setupLogoVisibility() {
       // Create a MutationObserver to watch for changes in the DOM
       const observer = new MutationObserver(function(mutations) {
         // Check if search results are visible
         const searchResults = document.querySelector('.gsc-results-wrapper-overlay.gsc-results-wrapper-visible');
         const logoContainer = document.querySelector('.logo-container');
+        const tagline = document.querySelector('.tagline');
         
         if (logoContainer) {
           if (searchResults) {
-            // Hide logo when search results are visible
+            // Hide logo and tagline when search results are visible
             logoContainer.style.display = 'none';
           } else {
-            // Show logo when search results are not visible
+            // Show logo and tagline when search results are not visible
             logoContainer.style.display = 'block';
           }
         }
@@ -946,13 +947,25 @@
       const searchButton = document.querySelector('.gsc-search-button');
       if (searchButton) {
         searchButton.addEventListener('click', function() {
-          // Give a small delay to allow results to load
-          setTimeout(function() {
+          // Hide logo container immediately when search button is clicked
+          const logoContainer = document.querySelector('.logo-container');
+          if (logoContainer) {
+            logoContainer.style.display = 'none';
+          }
+        });
+      }
+      
+      // Add event listener to the search input for when Enter key is pressed
+      const searchInput = document.querySelector('.gsc-input');
+      if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            // Hide logo container immediately when Enter is pressed in search input
             const logoContainer = document.querySelector('.logo-container');
             if (logoContainer) {
               logoContainer.style.display = 'none';
             }
-          }, 100);
+          }
         });
       }
     }
