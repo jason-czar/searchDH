@@ -468,67 +468,6 @@
     }
   </style>
   <script>
-    // Function to process URL through Zapier for enhanced product information
-    async function processUrlWithZapier(url) {
-      // Show loading indicator
-      const searchBox = document.querySelector('.gsc-input');
-      const originalValue = searchBox.value;
-      searchBox.value = 'Processing product information...';
-      
-      try {
-        // Replace this URL with your actual Zapier Webhook URL
-        const zapierWebhookUrl = 'https://hooks.zapier.com/hooks/catch/YOUR_ZAPIER_WEBHOOK_ID/'; 
-        
-        // Send the URL to Zapier
-        const response = await fetch(zapierWebhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ product_url: url })
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to process URL');
-        }
-        
-        // Get the processed data back from Zapier
-        const data = await response.json();
-        
-        // Use the extracted information for search
-        if (data.product_title) {
-          // Create a more effective search query using the extracted information
-          let searchQuery = data.product_title;
-          
-          if (data.brand_name) {
-            searchQuery += ' ' + data.brand_name;
-          }
-          
-          // Add any other relevant extracted information
-          if (data.product_category) {
-            searchQuery += ' ' + data.product_category;
-          }
-          
-          // Update the search box with the enhanced query
-          searchBox.value = searchQuery;
-          
-          // Trigger the search
-          document.querySelector('.gsc-search-button').click();
-          
-          // Return the processed data for potential further use
-          return data;
-        } else {
-          // If no product title was extracted, revert to original URL
-          searchBox.value = originalValue;
-          return null;
-        }
-      } catch (error) {
-        console.error('Error processing URL with Zapier:', error);
-        // Revert to original URL on error
-        searchBox.value = originalValue;
-        return null;
-      }
-    }
     
     // Function to modify all search result links to go through affiliate URL first
     function modifySearchResultLinks() {
