@@ -661,55 +661,86 @@
       searchBox.value = 'Processing product information...';
       
       try {
-        // Replace this URL with your actual Zapier Webhook URL
-        const zapierWebhookUrl = 'https://hooks.zapier.com/hooks/catch/YOUR_ZAPIER_WEBHOOK_ID/'; 
+        // Create a unique session ID for this request
+        const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 15);
         
-        // Send the URL to Zapier
-        const response = await fetch(zapierWebhookUrl, {
+        // Store the session ID in localStorage to check for results later
+        localStorage.setItem('zapier_processing', sessionId);
+        
+        // Send the URL to Zapier - this will trigger the Zap
+        // The Zap will process the URL and send results to our Netlify function
+        const zapierWebhookUrl = 'https://hooks.zapier.com/hooks/catch/YOUR_ZAPIER_WEBHOOK_ID/';
+        
+        // Send the URL and session ID to Zapier
+        await fetch(zapierWebhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ product_url: url })
+          body: JSON.stringify({ 
+            product_url: url,
+            session_id: sessionId
+          })
         });
         
-        if (!response.ok) {
-          throw new Error('Failed to process URL');
-        }
+        // Set a timeout for waiting for results (20 seconds)
+        let attempts = 0;
+        const maxAttempts = 20;
+        const checkInterval = 1000; // 1 second
         
-        // Get the processed data back from Zapier
-        const data = await response.json();
+        // Function to check for results from the Netlify function
+        const checkForResults = async () => {
+          if (attempts >= maxAttempts) {
+            throw new Error('Timed out waiting for product information');
+          }
+          
+          attempts++;
+          
+          try {
+            // Check if we have results in localStorage (would be set by the receiveResults function)
+            const resultsJson = localStorage.getItem('zapier_results_' + sessionId);
+            
+            if (resultsJson) {
+              // Clear the processing flag
+              localStorage.removeItem('zapier_processing');
+              localStorage.removeItem('zapier_results_' + sessionId);
+              
+              // Parse the results
+              const results = JSON.parse(resultsJson);
+              
+              // Use the product information for search
+              if (results.product_name) {
+                // Create a more effective search query
+                let searchQuery = results.product_name;
+                
+                if (results.brand_name) {
+                  searchQuery += ' ' + results.brand_name;
+                }
+                
+                // Update the search box with the enhanced query
+                searchBox.value = searchQuery;
+                
+                // Trigger the search
+                const searchButton = document.querySelector('.gsc-search-button');
+                if (searchButton) {
+                  searchButton.click();
+                }
+                
+                return results;
+              }
+            } else {
+              // No results yet, wait and try again
+              await new Promise(resolve => setTimeout(resolve, checkInterval));
+              return checkForResults();
+            }
+          } catch (error) {
+            console.error('Error checking for results:', error);
+            throw error;
+          }
+        };
         
-        // Use the extracted information for search
-        if (data.product_title) {
-          // Create a more effective search query using the extracted information
-          let searchQuery = data.product_title;
-          
-          if (data.brand_name) {
-            searchQuery += ' ' + data.brand_name;
-          }
-          
-          // Add any other relevant extracted information
-          if (data.product_category) {
-            searchQuery += ' ' + data.product_category;
-          }
-          
-          // Update the search box with the enhanced query
-          searchBox.value = searchQuery;
-          
-          // Trigger the search
-          const searchButton = document.querySelector('.gsc-search-button');
-          if (searchButton) {
-            searchButton.click();
-          }
-          
-          // Return the processed data for potential further use
-          return data;
-        } else {
-          // If no product title was extracted, revert to original URL
-          searchBox.value = originalValue;
-          return null;
-        }
+        // Start checking for results
+        return await checkForResults();
       } catch (error) {
         console.error('Error processing URL with Zapier:', error);
         // Revert to original URL on error
@@ -717,6 +748,20 @@
         return null;
       }
     }
+    
+    // Function to receive results from the Netlify function via postMessage
+    window.addEventListener('message', function(event) {
+      // Verify the origin of the message (should be your own domain)
+      if (event.origin !== window.location.origin) return;
+      
+      // Check if this is a message from our Netlify function
+      if (event.data && event.data.type === 'zapier_results') {
+        const { sessionId, results } = event.data;
+        
+        // Store the results in localStorage for the processUrlWithZapier function to find
+        localStorage.setItem('zapier_results_' + sessionId, JSON.stringify(results));
+      }
+    });
     
     // Helper function to extract product information from a URL
     function extractProductInfo(url) {
