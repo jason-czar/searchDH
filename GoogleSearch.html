@@ -40,12 +40,14 @@
         overflow-x: hidden;
         width: 100%;
         position: relative;
+        background-color: #42484B;
       }
       
       .search-container {
         width: 100%;
         margin: 0;
         padding: 24px 15px; /* Increased vertical padding by 20% (from 20px to 24px) */
+        background-color: #42484B;
       }
       
       .logo-text {
@@ -309,6 +311,20 @@
       transition: all 0.2s ease;
     }
     
+    /* Fix for mobile dark backgrounds */
+    @media (max-width: 768px) {
+      .gsc-results-wrapper-overlay,
+      .gsc-results,
+      .gsc-modal-background-image,
+      .gsc-modal-background-image-visible {
+        background-color: #42484B !important;
+      }
+      
+      .gsc-webResult.gsc-result {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+      }
+    }
+    
     .gsc-webResult.gsc-result:hover {
       background-color: rgba(255, 255, 255, 0.1) !important;
     }
@@ -477,8 +493,8 @@
       
       // Wait for search results to load
       const observer = new MutationObserver(function(mutations) {
-        // Look for all result links
-        const resultLinks = document.querySelectorAll('.gs-title a.gs-title, .gs-visibleUrl, .gs-image-thumbnail-container a, .gs-image');
+        // Look for all result links including Visit Website buttons
+        const resultLinks = document.querySelectorAll('.gs-title a.gs-title, .gs-visibleUrl, .gs-image-thumbnail-container a, .gs-image, a[href*="dhgate.com"], a:contains("Visit Website")');
         
         resultLinks.forEach(function(link) {
           // Only modify if not already modified
@@ -492,7 +508,7 @@
                 // First redirect to affiliate URL with original URL as parameter
                 // This creates a two-step redirect: affiliate URL -> original URL
                 // Open in a new tab
-                window.open(affiliateUrl + '?redirect=' + encodeURIComponent(originalHref), '_blank');
+                window.open(affiliateUrl + '?redirect=' + encodeURIComponent(originalHref), '_blank', 'noopener,noreferrer');
                 
                 return false;
               });
@@ -1091,16 +1107,64 @@
       }
     }
     
+    // Function to handle Visit Website buttons
+    function setupVisitWebsiteButtons() {
+      // The affiliate URL to redirect through
+      const affiliateUrl = 'https://sale.dhgate.com/92xVti99';
+      
+      // Find all buttons with text 'Visit Website'
+      document.addEventListener('click', function(e) {
+        // Check if the clicked element is a Visit Website button or inside a product card
+        if (e.target.textContent === 'Visit Website' || 
+            e.target.closest('.gs-image-thumbnail-container') || 
+            e.target.classList.contains('gs-image')) {
+          
+          e.preventDefault();
+          
+          // Find the closest product container
+          const productContainer = e.target.closest('.gsc-webResult');
+          
+          if (productContainer) {
+            // Try to find the URL in various places
+            const urlElement = productContainer.querySelector('.gs-visibleUrl');
+            let targetUrl = '';
+            
+            if (urlElement && urlElement.textContent) {
+              targetUrl = 'https://' + urlElement.textContent.trim();
+            } else {
+              // Try to find any dhgate.com URL in the container
+              const allLinks = productContainer.querySelectorAll('a');
+              for (let i = 0; i < allLinks.length; i++) {
+                if (allLinks[i].href && allLinks[i].href.includes('dhgate.com')) {
+                  targetUrl = allLinks[i].href;
+                  break;
+                }
+              }
+            }
+            
+            if (targetUrl) {
+              // Open in a new tab with the affiliate URL
+              window.open(affiliateUrl + '?redirect=' + encodeURIComponent(targetUrl), '_blank', 'noopener,noreferrer');
+            }
+          }
+        }
+      }, true);
+    }
+    
     // Run the setup when the page loads
     window.addEventListener('load', function() {
       setupUrlSearchHandler();
       setupLogoVisibility();
+      setupVisitWebsiteButtons();
+      modifySearchResultLinks();
     });
     
     // Also run when Google search results are updated
     document.addEventListener('DOMContentLoaded', function() {
       setupUrlSearchHandler();
       setupLogoVisibility();
+      setupVisitWebsiteButtons();
+      modifySearchResultLinks();
     });
   </script>
 </head>
