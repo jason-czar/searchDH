@@ -21,7 +21,7 @@
     /* Main container */
     .search-container {
       width: calc(100% - 40px);
-      max-width: 1500px;
+      max-width: 800px;
       margin: 0 20px;
       padding: 24px 0; /* Increased vertical padding by 20% (from 20px to 24px) */
       box-sizing: border-box;
@@ -309,30 +309,6 @@
       background-color: rgba(255, 255, 255, 0.05) !important;
       border-radius: 10px !important;
       transition: all 0.2s ease;
-      cursor: pointer !important;
-    }
-    
-    /* Prevent the default popup behavior */
-    .gs-imagePreviewArea-invisible,
-    .gs-image-popup-box,
-    .gsc-imageResult-popup,
-    .gsc-imageResult-classic,
-    .gs-imagePreviewArea {
-      display: none !important;
-    }
-    
-    /* Ensure the preview link doesn't interfere with our click handling */
-    .gs-previewLink {
-      pointer-events: none !important;
-    }
-    
-    /* Make sure the entire result card is clickable */
-    .gsc-webResult.gsc-result * {
-      pointer-events: none;
-    }
-    
-    .gsc-webResult.gsc-result {
-      pointer-events: auto;
     }
     
     /* Fix for mobile dark backgrounds */
@@ -381,18 +357,12 @@
       font-size: 13px !important;
     }
     
-    /* Style images in search results */
+    /* Style images with corner radius */
     .gs-image, .gs-image-box img, .gs-imagePreview {
       border-radius: 20px !important;
       overflow: hidden !important;
       max-width: 100% !important;
       height: auto !important;
-      cursor: pointer !important;
-    }
-    
-    /* Make sure image results are clickable */
-    .gsc-imageResult, .gs-imageResult {
-      cursor: pointer !important;
     }
     
     /* Style image preview area */
@@ -548,81 +518,6 @@
               
               // Mark as modified to avoid duplicate handlers
               link.setAttribute('data-modified', 'true');
-            }
-          }
-        });
-        
-        // Disable the default click behavior on search results to prevent the popup
-        const searchResults = document.querySelectorAll('.gsc-webResult, .gsc-result, .gs-result, .gs-imageResult, .gsc-imageResult');
-        searchResults.forEach(function(result) {
-          if (!result.getAttribute('data-click-modified')) {
-            result.addEventListener('click', function(e) {
-              // Find the DHgate URL in this result
-              const urlElement = result.querySelector('.gs-visibleUrl');
-              let targetUrl = '';
-              
-              if (urlElement && urlElement.textContent) {
-                // Add https:// if it's a domain
-                targetUrl = urlElement.textContent.trim();
-                if (!targetUrl.startsWith('http')) {
-                  targetUrl = 'https://' + targetUrl;
-                }
-              } else {
-                // Try to find any dhgate.com URL in the container
-                const allLinks = result.querySelectorAll('a');
-                for (let i = 0; i < allLinks.length; i++) {
-                  if (allLinks[i].href && allLinks[i].href.includes('dhgate.com')) {
-                    targetUrl = allLinks[i].href;
-                    break;
-                  }
-                }
-              }
-              
-              if (targetUrl) {
-                // Prevent the default popup behavior
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Open in a new tab with the affiliate URL
-                window.open(affiliateUrl + '?redirect=' + encodeURIComponent(targetUrl), '_blank', 'noopener,noreferrer');
-                return false;
-              }
-            }, true);
-            
-            result.setAttribute('data-click-modified', 'true');
-            
-            // Also prevent the default popup on the image container
-            const imageContainer = result.querySelector('.gs-image-thumbnail-box');
-            if (imageContainer) {
-              imageContainer.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Find the DHgate URL in this result
-                const urlElement = result.querySelector('.gs-visibleUrl');
-                let targetUrl = '';
-                
-                if (urlElement && urlElement.textContent) {
-                  targetUrl = 'https://' + urlElement.textContent.trim();
-                } else {
-                  // Try to find any dhgate.com URL in the container
-                  const productContainer = result.querySelector('.gs-image-thumbnail-container');
-                  const allLinks = productContainer.querySelectorAll('a');
-                  for (let i = 0; i < allLinks.length; i++) {
-                    if (allLinks[i].href && allLinks[i].href.includes('dhgate.com')) {
-                      targetUrl = allLinks[i].href;
-                      break;
-                    }
-                  }
-                }
-                
-                if (targetUrl) {
-                  // Open in a new tab with the affiliate URL
-                  window.open(affiliateUrl + '?redirect=' + encodeURIComponent(targetUrl), '_blank', 'noopener,noreferrer');
-                }
-                
-                return false;
-              }, true);
             }
           }
         });
@@ -1256,53 +1151,12 @@
       }, true);
     }
     
-    // Function to intercept clicks on image preview areas
-    function interceptImagePreviewClicks() {
-      // The affiliate URL to redirect through
-      const affiliateUrl = 'https://sale.dhgate.com/92xVti99';
-      
-      // Use a mutation observer to detect when image preview areas are added
-      const observer = new MutationObserver(function(mutations) {
-        // Find all image preview areas
-        const previewAreas = document.querySelectorAll('.gs-imagePreviewArea, .gs-previewLink');
-        
-        previewAreas.forEach(function(area) {
-          if (!area.getAttribute('data-click-intercepted')) {
-            // Find the link in the preview area
-            const link = area.querySelector('a') || area;
-            const href = link.getAttribute('href');
-            
-            if (href && href.includes('dhgate.com')) {
-              // Replace the click behavior
-              area.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Open in a new tab with the affiliate URL
-                window.open(affiliateUrl + '?redirect=' + encodeURIComponent(href), '_blank', 'noopener,noreferrer');
-                return false;
-              }, true);
-              
-              area.setAttribute('data-click-intercepted', 'true');
-            }
-          }
-        });
-      });
-      
-      // Start observing the document for changes
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    }
-    
     // Run the setup when the page loads
     window.addEventListener('load', function() {
       setupUrlSearchHandler();
       setupLogoVisibility();
       setupVisitWebsiteButtons();
       modifySearchResultLinks();
-      interceptImagePreviewClicks();
     });
     
     // Also run when Google search results are updated
@@ -1311,7 +1165,6 @@
       setupLogoVisibility();
       setupVisitWebsiteButtons();
       modifySearchResultLinks();
-      interceptImagePreviewClicks();
     });
   </script>
 </head>
