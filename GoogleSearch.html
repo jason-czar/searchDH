@@ -149,7 +149,8 @@
     }
     
     input.gsc-input::placeholder {
-      color: rgba(255, 255, 255, 0.7) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+      opacity: 1 !important;
     }
     
     /* Style the search suggestions dropdown */
@@ -1090,78 +1091,16 @@
       }
     }
     
-    // Function to handle search suggestions
-    function setupSearchSuggestions() {
-      // Wait for Google CSE to fully initialize
-      const waitForGoogleCSE = setInterval(() => {
-        // Check if Google CSE elements are available
-        const searchInput = document.querySelector('.gsc-input');
-        const searchButton = document.querySelector('.gsc-search-button');
-        
-        if (searchInput && searchButton) {
-          clearInterval(waitForGoogleCSE);
-          
-          // Get all suggestion buttons
-          const suggestionButtons = document.querySelectorAll('.suggestion-button');
-          
-          // Add click event listener to each button
-          suggestionButtons.forEach(button => {
-            button.addEventListener('click', function() {
-              // Get the suggestion text
-              const suggestionText = this.textContent;
-              
-              // Set the search input value
-              searchInput.value = suggestionText;
-              
-              // Hide logo when search is initiated
-              const logoContainer = document.querySelector('.logo-container');
-              if (logoContainer) {
-                logoContainer.style.display = 'none';
-              }
-              
-              // Force the input to update properly
-              const inputEvent = new Event('input', { bubbles: true });
-              searchInput.dispatchEvent(inputEvent);
-              
-              // Small delay to ensure Google CSE recognizes the input change
-              setTimeout(() => {
-                // Trigger the search using both click and programmatic submission
-                searchButton.click();
-                
-                // Also try to submit the form directly
-                const searchForm = searchInput.closest('form');
-                if (searchForm) {
-                  searchForm.submit();
-                }
-                
-                // Additional fallback - dispatch enter key event
-                const keyEvent = new KeyboardEvent('keypress', {
-                  key: 'Enter',
-                  code: 'Enter',
-                  keyCode: 13,
-                  which: 13,
-                  bubbles: true
-                });
-                searchInput.dispatchEvent(keyEvent);
-              }, 100);
-            });
-          });
-        }
-      }, 500); // Check every 500ms
-    }
-    
     // Run the setup when the page loads
     window.addEventListener('load', function() {
       setupUrlSearchHandler();
       setupLogoVisibility();
-      setupSearchSuggestions();
     });
     
     // Also run when Google search results are updated
     document.addEventListener('DOMContentLoaded', function() {
       setupUrlSearchHandler();
       setupLogoVisibility();
-      setupSearchSuggestions();
     });
   </script>
 </head>
@@ -1172,11 +1111,6 @@
       <p class="tagline">Paste any product link — get DHgate alternatives in seconds.</p>
     </div>
     <div class="gcse-search" data-num-results-per-page="24"></div>
-    <div class="search-suggestions">
-      <button class="suggestion-button">Prada sunglasses</button>
-      <button class="suggestion-button">New Balance 9060</button>
-      <button class="suggestion-button">LV bag</button>
-    </div>
   </div>
   <footer class="footer">
     <p>© 2025 SearchDH | All Rights Reserved</p>
@@ -1223,36 +1157,6 @@
     
     .footer p {
       margin: 0;
-    }
-    
-    /* Search suggestion styles */
-    .search-suggestions {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-    }
-    
-    .suggestion-button {
-      background-color: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 25px;
-      color: rgba(255, 255, 255, 0.8);
-      padding: 8px 20px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .suggestion-button:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
-    }
-    
-    /* Hide suggestions when search results are visible */
-    .gsc-results-wrapper-visible ~ .search-suggestions {
-      display: none;
     }
   </style>
 </body>
